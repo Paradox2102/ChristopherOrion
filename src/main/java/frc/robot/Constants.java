@@ -18,6 +18,12 @@ public final class Constants {
     public static int k_rightDrive = 3;
     public static int k_rightFollower = 4;
 
+    public static int k_intake = 5;
+
     public static int k_shooter = 10;
     public static int k_shooterFollower = 11;
+
+    public static int k_throat = 7;
+    public static final int k_dioTop = 2;
+    public static final int k_dioBottom = 3;
 }

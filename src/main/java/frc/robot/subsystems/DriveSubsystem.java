@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,7 +21,18 @@ public class DriveSubsystem extends SubsystemBase {
   CANSparkMax m_rightFollower = new CANSparkMax(Constants.k_rightFollower, MotorType.kBrushless);
 
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() {}
+  public DriveSubsystem() {
+    m_rightFollower.follow(m_rightDrive);
+    m_leftFollower.follow(m_leftDrive);
+
+    m_leftDrive.setIdleMode(IdleMode.kBrake);
+    m_leftFollower.setIdleMode(IdleMode.kBrake);
+    m_rightDrive.setIdleMode(IdleMode.kBrake);
+    m_rightFollower.setIdleMode(IdleMode.kBrake);
+
+    m_rightDrive.setInverted(false);
+    m_leftDrive.setInverted(true);
+  }
   
 
   public void setPower(double leftPower, double rightPower){
