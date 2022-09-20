@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.PiCamera.Logger;
 import frc.robot.subsystems.ShooterSubsystem;
 
 public class ShooterCommand extends CommandBase {
@@ -21,19 +22,19 @@ public class ShooterCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_subsystem.setPower(1);
+    m_subsystem.setSpeed(3000, 3000);
+    Logger.Log("ShooterCommand", 1, "initialized");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {
-    SmartDashboard.putNumber("Shooter Speed", m_subsystem.getSpeed());
-  }
+  public void execute() {}
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_subsystem.setPower(0);
+    m_subsystem.setPower(0, 0);
+    Logger.Log("ShooterCommand", 1, "end");
   }
 
   // Returns true when the command should end.

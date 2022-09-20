@@ -3,7 +3,7 @@
     "type": "java",
     "name": "frcJava",
     "port": 8349,
-    "target": "10.91.2.2",
+    "target": "10.21.2.2",
     "project": "ChristopherOrion"
   }
 ]

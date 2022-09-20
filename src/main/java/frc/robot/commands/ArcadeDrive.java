@@ -37,14 +37,13 @@ public class ArcadeDrive extends CommandBase {
     double y = -m_getY.getAsDouble();
     double throttle = m_getThrottle.getAsDouble();
 
-    y = y * y * y;
-    x = x * x * x;
+    m_subsystem.getDrive().arcadeDrive(y, x, true);
 
-    if (throttle < 0){
-      m_subsystem.setPower(y+x, y-x);
-    } else {
-      m_subsystem.setPower(x-y, -x-y);
-    }
+    // if (throttle < 0){
+    //   m_subsystem.setPower(y+x, y-x);
+    // } else {
+    //   m_subsystem.setPower(x-y, -x-y);
+    // }
   }
 
   // Called once the command ends or is interrupted.
