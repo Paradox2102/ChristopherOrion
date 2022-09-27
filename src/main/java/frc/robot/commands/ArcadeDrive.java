@@ -8,6 +8,7 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.PiCamera.Logger;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class ArcadeDrive extends CommandBase {
@@ -28,7 +29,9 @@ public class ArcadeDrive extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    Logger.Log("ArcadeDrive", 1, "initialize");
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -37,18 +40,21 @@ public class ArcadeDrive extends CommandBase {
     double y = -m_getY.getAsDouble();
     double throttle = m_getThrottle.getAsDouble();
 
-    m_subsystem.getDrive().arcadeDrive(y, x, true);
+    //m_subsystem.getDrive().arcadeDrive(y, x, true);
 
-    // if (throttle < 0){
-    //   m_subsystem.setPower(y+x, y-x);
-    // } else {
-    //   m_subsystem.setPower(x-y, -x-y);
-    // }
+    if (throttle < 0){
+      m_subsystem.getDrive().arcadeDrive(y, x, true);
+    } else {
+      m_subsystem.getDrive().arcadeDrive(-y, x, true);
+    }
+    //Logger.Log("ArcadeDrive", 1, String.format("x=%f, y=%f, throttle=%f", x, y, throttle));
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    Logger.Log("ArcadeDrive", 1, "end");
+  }
 
   // Returns true when the command should end.
   @Override

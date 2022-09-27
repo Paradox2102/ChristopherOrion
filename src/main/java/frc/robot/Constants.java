@@ -18,7 +18,7 @@ public final class Constants {
     public static int k_rightDrive = 3;
     public static int k_rightFollower = 4;
 
-    public static int k_intake = 5;
+    public static int k_intake = 9;
 
     public static int k_shooter = 11;
     public static int k_shooterFollower = 10;
