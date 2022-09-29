@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.PiCamera.Logger;
@@ -16,6 +17,8 @@ public class ArcadeDrive extends CommandBase {
   DoubleSupplier m_getX;
   DoubleSupplier m_getY;
   DoubleSupplier m_getThrottle;
+  SlewRateLimiter m_filter = new SlewRateLimiter(4);
+  // 1 divided by number in perenthesis ^^^
 
   /** Creates a new ArcadeDrive. */
   public ArcadeDrive(DriveSubsystem driveSubsystem, DoubleSupplier getX, DoubleSupplier getY, DoubleSupplier getThrottle) {
@@ -43,9 +46,9 @@ public class ArcadeDrive extends CommandBase {
     //m_subsystem.getDrive().arcadeDrive(y, x, true);
 
     if (throttle < 0){
-      m_subsystem.getDrive().arcadeDrive(y, x, true);
+      m_subsystem.getDrive().arcadeDrive(m_filter.calculate(y), x, true);
     } else {
-      m_subsystem.getDrive().arcadeDrive(-y, x, true);
+      m_subsystem.getDrive().arcadeDrive(m_filter.calculate(-y), x, true);
     }
     //Logger.Log("ArcadeDrive", 1, String.format("x=%f, y=%f, throttle=%f", x, y, throttle));
   }
