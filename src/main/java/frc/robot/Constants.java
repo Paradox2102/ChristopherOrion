@@ -25,6 +25,6 @@ public final class Constants {
     public static int k_backWheels = 12;
 
     public static int k_throat = 7;
-    public static final int k_dioTop = 2;
-    public static final int k_dioBottom = 3;
+    public static final int k_dioTop = 0;
+    public static final int k_dioBottom = 1;
 }

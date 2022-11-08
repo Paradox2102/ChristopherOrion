@@ -41,6 +41,7 @@ public class RobotContainer {
   JoystickButton m_shooter = new JoystickButton(m_joystick, 2);
   JoystickButton m_intake = new JoystickButton(m_joystick, 1);
   JoystickButton m_outtake = new JoystickButton(m_joystick, 8);
+  JoystickButton m_throat = new JoystickButton(m_joystick, 3);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -50,8 +51,9 @@ public class RobotContainer {
     m_throatSubsystem.setDefaultCommand(new ThroatCommand(m_throatSubsystem));
   
     m_shooter.toggleWhenPressed(new ShooterCommand(m_shooterSubsystem));
-    m_intake.toggleWhenPressed(new IntakeCommand(m_intakeSubsystem, .75));
-    m_outtake.toggleWhenPressed(new IntakeCommand(m_intakeSubsystem, -.75));
+    m_intake.whileHeld(new IntakeCommand(m_intakeSubsystem, .75));
+    m_outtake.whileHeld(new IntakeCommand(m_intakeSubsystem, -.75));
+    m_throat.toggleWhenPressed(new ThroatCommand(m_throatSubsystem));
 
   }
 

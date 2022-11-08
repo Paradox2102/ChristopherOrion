@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -43,14 +44,17 @@ public class ArcadeDrive extends CommandBase {
     double y = -m_getY.getAsDouble();
     double throttle = m_getThrottle.getAsDouble();
 
+    y = MathUtil.applyDeadband(y, .1);
+    x = MathUtil.applyDeadband(x, .1);
+
     //m_subsystem.getDrive().arcadeDrive(y, x, true);
 
     if (throttle < 0){
-      m_subsystem.getDrive().arcadeDrive(m_filter.calculate(y), x, true);
+      m_subsystem.setSpeed(-y-x, -y+x);//getDrive().arcadeDrive(m_filter.calculate(y), x, true);
     } else {
-      m_subsystem.getDrive().arcadeDrive(m_filter.calculate(-y), x, true);
+      m_subsystem.setSpeed(-x+y, x+y);//getDrive().arcadeDrive(m_filter.calculate(-y), x, true);
     }
-    //Logger.Log("ArcadeDrive", 1, String.format("x=%f, y=%f, throttle=%f", x, y, throttle));
+    // Logger.Log("ArcadeDrive", 1, String.format("x=%f, y=%f, throttle=%f", x, y, throttle));
   }
 
   // Called once the command ends or is interrupted.

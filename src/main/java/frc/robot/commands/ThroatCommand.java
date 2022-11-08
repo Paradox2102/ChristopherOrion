@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.PiCamera.Logger;
 import frc.robot.subsystems.ThroatSubsystem;
 
 public class ThroatCommand extends CommandBase {
@@ -20,7 +21,9 @@ public class ThroatCommand extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    Logger.Log("ThroatCommand", 1, "initialize");
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -36,6 +39,7 @@ public class ThroatCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_subsystem.setPower(0);
+    Logger.Log("ThroatCommand", 1, "end");
   }
 
   // Returns true when the command should end.

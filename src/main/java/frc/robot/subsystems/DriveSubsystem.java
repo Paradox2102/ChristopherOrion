@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +30,12 @@ public class DriveSubsystem extends SubsystemBase {
 
   DifferentialDrive m_drive = new DifferentialDrive(m_left, m_right);
 
+  private final double k_s = .20706;
+  private final double k_v = 2.7656;
+  private final double k_a = .45747; 
+
+  SimpleMotorFeedforward m_feedForward = new SimpleMotorFeedforward(k_s, k_v, k_a);
+
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
     m_right.setInverted(true);
@@ -41,6 +48,11 @@ public class DriveSubsystem extends SubsystemBase {
       m_leftDrive.set(leftPower);
       m_rightDrive.set(rightPower);
     }
+  }
+
+  public void setSpeed(double leftSpeed, double rightSpeed){
+    m_leftDrive.setVoltage(m_feedForward.calculate(leftSpeed));
+    m_rightDrive.setVoltage(m_feedForward.calculate(rightSpeed));
   }
 
   public DifferentialDrive getDrive(){
