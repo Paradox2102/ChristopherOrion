@@ -11,8 +11,10 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
@@ -43,10 +45,10 @@ public class DriveSubsystem extends SubsystemBase {
   public static final double k_trackWidthMeters = .6;
   public static final DifferentialDriveKinematics k_DriveKinematics = new DifferentialDriveKinematics(k_trackWidthMeters);
 
-  private final double k_s = .20706;
-  private final double k_v = 2.7656;
-  private final double k_a = .45747; 
-  private final double k_p = 1.6005E-06;
+  public final double k_s = .20706;
+  public final double k_v = 2.7656;
+  public final double k_a = .45747; 
+  public final double k_p = 1.6005E-06;
   private final double k_maxSpeed = 2.5;
   private final double k_maxAccel = 15;
   private final double k_distancePerTick = .4555;
@@ -76,6 +78,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_rightEncoder.setPosition(0);
   }
 
+  public double getHeading(){
+    return m_gyro.getRotation2d().getDegrees();
+  }
+
   public void setSpeed(double leftSpeed, double rightSpeed){
     m_leftDrive.setVoltage(m_feedForward.calculate(leftSpeed));
     m_rightDrive.setVoltage(m_feedForward.calculate(rightSpeed));
@@ -83,6 +89,10 @@ public class DriveSubsystem extends SubsystemBase {
 
   public DifferentialDrive getDrive(){
     return m_drive;
+  }
+
+  public Pose2d getPose(){
+    return m_odometry.getPoseMeters();
   }
   
   public void setBrakeMode(boolean brake) {
@@ -92,6 +102,16 @@ public class DriveSubsystem extends SubsystemBase {
     m_rightFollower.setIdleMode(brake ? IdleMode.kBrake : IdleMode.kCoast);
     SmartDashboard.putBoolean("brake mode", brake);
     Logger.Log("DriveSubsystem", 1, "Brake  " + brake);
+  }
+
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getVelocity() * k_distancePerTick, m_rightEncoder.getVelocity() * k_distancePerTick);
+  }
+
+  public void tankDriveVolts(double leftVolts, double rightVolts){
+    m_left.setVoltage(leftVolts);
+    m_right.setVoltage(rightVolts);
+    m_drive.feed();
   }
 
   @Override
