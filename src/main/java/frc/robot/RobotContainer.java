@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.util.List;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,6 +20,7 @@ import edu.wpi.first.math.trajectory.constraint.TrajectoryConstraint;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.commands.ArcadeDrive;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.IntakeCommand;
@@ -29,6 +32,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ThroatSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
@@ -54,7 +58,7 @@ public class RobotContainer {
   JoystickButton m_outtake = new JoystickButton(m_joystick, 8);
   JoystickButton m_throat = new JoystickButton(m_joystick, 3);
 
-  TrajectoryConstraint m_autConstraint;
+  TrajectoryConstraint m_autoConstraint;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -72,8 +76,9 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(m_driveSubsystem.k_s, m_driveSubsystem.k_v), m_driveSubsystem.k_DriveKinematics, 10);
+    DriveSubsystem robotDrive = m_driveSubsystem;
 
-    TrajectoryConfig config = new TrajectoryConfig(m_driveSubsystem.k_s, m_driveSubsystem.k_v).setKinematics(m_driveSubsystem.k_DriveKinematics).addConstraint(m_autConstraint);
+    TrajectoryConfig config = new TrajectoryConfig(robotDrive.k_s, robotDrive.k_v).setKinematics(m_driveSubsystem.k_DriveKinematics).addConstraint(m_autoConstraint);
 
     Trajectory exampleTrajectory = 
     TrajectoryGenerator.generateTrajectory(
@@ -82,8 +87,22 @@ public class RobotContainer {
       new Pose2d(3, 0, new Rotation2d(0)),
       config);
 
-    // FINISH THIS COMMAND ON WEDNESDAY
+    RamseteCommand ramseteCommand = 
+    new RamseteCommand(exampleTrajectory,
+      robotDrive::getPose,
+      new RamseteController(2, .7),
+      new SimpleMotorFeedforward(m_driveSubsystem.k_s, m_driveSubsystem.k_v, m_driveSubsystem.k_a),
+      m_driveSubsystem.k_DriveKinematics,
+      robotDrive::getWheelSpeeds,
+      new PIDController(8.5, 0, 0),
+      new PIDController(8.5, 0, 0),
+      robotDrive::tankDriveVolts,
+      robotDrive
+      );
 
+      robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
+
+      return ramseteCommand.andThen(() -> robotDrive.tankDriveVolts(0, 0));
   }
 
   /**
@@ -99,8 +118,4 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return m_autoCommand;
-  }
 }

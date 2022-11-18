@@ -41,7 +41,7 @@ public class DriveSubsystem extends SubsystemBase {
   MotorControllerGroup m_left = new MotorControllerGroup(m_leftDrive, m_leftFollower);
   MotorControllerGroup m_right = new MotorControllerGroup(m_rightDrive, m_rightFollower);
 
-  DifferentialDrive m_drive = new DifferentialDrive(m_left, m_right);
+  public DifferentialDrive m_drive = new DifferentialDrive(m_left, m_right);
   public static final double k_trackWidthMeters = .6;
   public static final DifferentialDriveKinematics k_DriveKinematics = new DifferentialDriveKinematics(k_trackWidthMeters);
 
@@ -93,6 +93,11 @@ public class DriveSubsystem extends SubsystemBase {
 
   public Pose2d getPose(){
     return m_odometry.getPoseMeters();
+  }
+
+  public void resetOdometry(Pose2d pose){
+    resetEncoders();
+    m_odometry.resetPosition(pose, m_gyro.getRotation2d());
   }
   
   public void setBrakeMode(boolean brake) {
