@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.PiCamera.Logger;
@@ -43,7 +44,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   public DifferentialDrive m_drive = new DifferentialDrive(m_left, m_right);
   public static final double k_trackWidthMeters = .6;
-  public static final DifferentialDriveKinematics k_DriveKinematics = new DifferentialDriveKinematics(k_trackWidthMeters);
+  public final DifferentialDriveKinematics k_DriveKinematics = new DifferentialDriveKinematics(k_trackWidthMeters);
 
   public final double k_s = .20706;
   public final double k_v = 2.7656;
@@ -51,11 +52,16 @@ public class DriveSubsystem extends SubsystemBase {
   public final double k_p = 1.6005E-06;
   private final double k_maxSpeed = 2.5;
   private final double k_maxAccel = 15;
-  private final double k_distancePerTick = .4555;
+  private final double k_distancePerTick = .04555;
 
-  SimpleMotorFeedforward m_feedForward = new SimpleMotorFeedforward(k_s, k_v, k_a);
+
+  public final double k_maxSpeedMetersPerSecond = .25;
+  public final double k_maxAccelerationMetersPerSecondSquared = 1;
+
+  public SimpleMotorFeedforward m_feedForward = new SimpleMotorFeedforward(k_s, k_v, k_a);
 
   DifferentialDriveOdometry m_odometry;
+  private final Field2d m_field = new Field2d();
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -63,6 +69,7 @@ public class DriveSubsystem extends SubsystemBase {
     m_left.setInverted(true);
     resetEncoders();
     m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
+    SmartDashboard.putData("Get Pose Meters", m_field);
   }
   
 
@@ -121,8 +128,11 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // This method will bme called once per scheduler run
     m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getPosition() * k_distancePerTick, m_rightEncoder.getPosition() * k_distancePerTick);
+    m_field.setRobotPose(m_odometry.getPoseMeters());
+    SmartDashboard.putNumber("Right Encoder", m_rightEncoder.getPosition());
+    SmartDashboard.putNumber("Left Encoder", m_leftEncoder.getPosition());
   }
 
 }

@@ -75,10 +75,9 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(m_driveSubsystem.k_s, m_driveSubsystem.k_v), m_driveSubsystem.k_DriveKinematics, 10);
     DriveSubsystem robotDrive = m_driveSubsystem;
-
-    TrajectoryConfig config = new TrajectoryConfig(robotDrive.k_s, robotDrive.k_v).setKinematics(m_driveSubsystem.k_DriveKinematics).addConstraint(m_autoConstraint);
+    var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(robotDrive.m_feedForward, m_driveSubsystem.k_DriveKinematics, 3);
+    TrajectoryConfig config = new TrajectoryConfig(robotDrive.k_maxSpeedMetersPerSecond, robotDrive.k_maxAccelerationMetersPerSecondSquared).setKinematics(m_driveSubsystem.k_DriveKinematics).addConstraint(autoVoltageConstraint);//m_autoConstraint);
 
     Trajectory exampleTrajectory = 
     TrajectoryGenerator.generateTrajectory(
@@ -91,11 +90,11 @@ public class RobotContainer {
     new RamseteCommand(exampleTrajectory,
       robotDrive::getPose,
       new RamseteController(2, .7),
-      new SimpleMotorFeedforward(m_driveSubsystem.k_s, m_driveSubsystem.k_v, m_driveSubsystem.k_a),
+      robotDrive.m_feedForward,
       m_driveSubsystem.k_DriveKinematics,
       robotDrive::getWheelSpeeds,
-      new PIDController(8.5, 0, 0),
-      new PIDController(8.5, 0, 0),
+      new PIDController(robotDrive.k_p, 0, 0),
+      new PIDController(robotDrive.k_p, 0, 0),
       robotDrive::tankDriveVolts,
       robotDrive
       );
