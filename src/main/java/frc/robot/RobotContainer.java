@@ -76,7 +76,7 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     DriveSubsystem robotDrive = m_driveSubsystem;
-    var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(robotDrive.m_feedForward, m_driveSubsystem.k_DriveKinematics, 3);
+    var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(robotDrive.m_feedForward, m_driveSubsystem.k_DriveKinematics, robotDrive.k_volts);
     TrajectoryConfig config = new TrajectoryConfig(robotDrive.k_maxSpeedMetersPerSecond, robotDrive.k_maxAccelerationMetersPerSecondSquared).setKinematics(m_driveSubsystem.k_DriveKinematics).addConstraint(autoVoltageConstraint);//m_autoConstraint);
 
     Trajectory exampleTrajectory = 
@@ -86,10 +86,12 @@ public class RobotContainer {
       new Pose2d(3, 0, new Rotation2d(0)),
       config);
 
+    robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
+
     RamseteCommand ramseteCommand = 
     new RamseteCommand(exampleTrajectory,
       robotDrive::getPose,
-      new RamseteController(2, .7),
+      new RamseteController(), // 2, .7
       robotDrive.m_feedForward,
       m_driveSubsystem.k_DriveKinematics,
       robotDrive::getWheelSpeeds,
@@ -99,9 +101,7 @@ public class RobotContainer {
       robotDrive
       );
 
-      robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
-
-      return ramseteCommand.andThen(() -> robotDrive.tankDriveVolts(0, 0));
+      return ramseteCommand.andThen(() -> robotDrive.stop());
   }
 
   /**

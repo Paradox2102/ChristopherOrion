@@ -27,8 +27,6 @@ import frc.robot.Constants;
 
 public class DriveSubsystem extends SubsystemBase {
 
-  Object m_setLock = new Object();
-
   CANSparkMax m_leftDrive = new CANSparkMax(Constants.k_leftDrive, MotorType.kBrushless);
   CANSparkMax m_rightDrive = new CANSparkMax(Constants.k_rightDrive, MotorType.kBrushless);
   CANSparkMax m_leftFollower = new CANSparkMax(Constants.k_leftFollower, MotorType.kBrushless);
@@ -50,13 +48,10 @@ public class DriveSubsystem extends SubsystemBase {
   public final double k_v = 2.7656;
   public final double k_a = .45747; 
   public final double k_p = 1.6005E-06;
-  private final double k_maxSpeed = 2.5;
-  private final double k_maxAccel = 15;
   private final double k_distancePerTick = .04555;
-
-
   public final double k_maxSpeedMetersPerSecond = .25;
   public final double k_maxAccelerationMetersPerSecondSquared = 1;
+  public final double k_volts = 3;
 
   public SimpleMotorFeedforward m_feedForward = new SimpleMotorFeedforward(k_s, k_v, k_a);
 
@@ -74,10 +69,8 @@ public class DriveSubsystem extends SubsystemBase {
   
 
   public void setPower(double leftPower, double rightPower){
-    synchronized(m_setLock){
       m_leftDrive.set(leftPower);
       m_rightDrive.set(rightPower);
-    }
   }
 
   public void resetEncoders(){
@@ -90,8 +83,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void setSpeed(double leftSpeed, double rightSpeed){
-    m_leftDrive.setVoltage(m_feedForward.calculate(leftSpeed));
-    m_rightDrive.setVoltage(m_feedForward.calculate(rightSpeed));
+    tankDriveVolts(m_feedForward.calculate(leftSpeed), m_feedForward.calculate(rightSpeed));
   }
 
   public DifferentialDrive getDrive(){
@@ -117,13 +109,17 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getVelocity() * k_distancePerTick, m_rightEncoder.getVelocity() * k_distancePerTick);
+    return new DifferentialDriveWheelSpeeds((m_leftEncoder.getVelocity() * k_distancePerTick) / 60.0, (m_rightEncoder.getVelocity() * k_distancePerTick) / 60.0);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts){
     m_left.setVoltage(leftVolts);
     m_right.setVoltage(rightVolts);
     m_drive.feed();
+  }
+
+  public void stop() {
+    tankDriveVolts(0, 0);
   }
 
   @Override
