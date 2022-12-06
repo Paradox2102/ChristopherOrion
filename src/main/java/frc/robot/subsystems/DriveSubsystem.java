@@ -47,7 +47,7 @@ public class DriveSubsystem extends SubsystemBase {
   public final double k_s = .20706;
   public final double k_v = 2.7656;
   public final double k_a = .45747; 
-  public final double k_p = 1.6005E-06;
+  public final double k_p = 0;//1.6005E-06;
   private final double k_distancePerTick = .04555;
   public final double k_maxSpeedMetersPerSecond = .25;
   public final double k_maxAccelerationMetersPerSecondSquared = 1;
@@ -116,6 +116,8 @@ public class DriveSubsystem extends SubsystemBase {
     m_left.setVoltage(leftVolts);
     m_right.setVoltage(rightVolts);
     m_drive.feed();
+    SmartDashboard.putNumber("Right Volts", rightVolts);
+    SmartDashboard.putNumber("Left Volts", leftVolts);
   }
 
   public void stop() {
@@ -129,6 +131,8 @@ public class DriveSubsystem extends SubsystemBase {
     m_field.setRobotPose(m_odometry.getPoseMeters());
     SmartDashboard.putNumber("Right Encoder", m_rightEncoder.getPosition());
     SmartDashboard.putNumber("Left Encoder", m_leftEncoder.getPosition());
+    SmartDashboard.putNumber("Right Velocity", m_rightEncoder.getVelocity());
+    SmartDashboard.putNumber("Left Velocity", m_leftEncoder.getVelocity());
   }
 
 }
