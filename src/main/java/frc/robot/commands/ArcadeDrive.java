@@ -50,9 +50,9 @@ public class ArcadeDrive extends CommandBase {
     //m_subsystem.getDrive().arcadeDrive(y, x, true);
 
     if (throttle < 0){
-      m_subsystem.setSpeed(-y+x, -y-x);//getDrive().arcadeDrive(m_filter.calculate(y), x, true);
+      m_subsystem.setSpeed(-y-x, -y+x);//getDrive().arcadeDrive(m_filter.calculate(y), x, true);
     } else {
-      m_subsystem.setSpeed(x+y, -x+y);//getDrive().arcadeDrive(m_filter.calculate(-y), x, true);
+      m_subsystem.setSpeed(-x+y, x+y);//getDrive().arcadeDrive(m_filter.calculate(-y), x, true);
     }
     // Logger.Log("ArcadeDrive", 1, String.format("x=%f, y=%f, throttle=%f", x, y, throttle));
   }

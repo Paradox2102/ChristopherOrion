@@ -60,8 +60,12 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
+    m_leftDrive.restoreFactoryDefaults();
+    m_leftFollower.restoreFactoryDefaults();
+    m_rightDrive.restoreFactoryDefaults();
+    m_rightFollower.restoreFactoryDefaults();
     m_right.setInverted(true);
-    m_left.setInverted(true);
+    m_left.setInverted(false);
     resetEncoders();
     m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
     SmartDashboard.putData("Get Pose Meters", m_field);
