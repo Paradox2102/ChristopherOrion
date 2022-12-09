@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.ArcadeDrive;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.IntakeCommand;
@@ -100,6 +101,7 @@ public class RobotContainer {
       robotDrive::tankDriveVolts,
       robotDrive
       );
+      SmartDashboard.putData(ramseteCommand);
 
       return ramseteCommand.andThen(() -> robotDrive.stop());
   }

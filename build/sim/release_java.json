@@ -1,21 +1,21 @@
 [
   {
     "type": "java",
-    "name": "jar (in project ChristopherOrion)",
+    "name": "jar (in project ChristopherOrion_Paradox)",
     "extensions": [
       {
         "name": "Sim DriverStation",
-        "libName": "C:\\Users\\Paradox\\Desktop\\FRC\\ChristopherOrion\\build\\jni\\release\\halsim_ds_socket.dll",
+        "libName": "C:\\Users\\Christopher\\Documents\\GitHub\\ChristopherOrion_Paradox\\build\\jni\\release\\halsim_ds_socket.dll",
         "defaultEnabled": false
       },
       {
         "name": "Sim GUI",
-        "libName": "C:\\Users\\Paradox\\Desktop\\FRC\\ChristopherOrion\\build\\jni\\release\\halsim_gui.dll",
+        "libName": "C:\\Users\\Christopher\\Documents\\GitHub\\ChristopherOrion_Paradox\\build\\jni\\release\\halsim_gui.dll",
         "defaultEnabled": true
       }
     ],
     "environment": {},
-    "libraryDir": "C:\\Users\\Paradox\\Desktop\\FRC\\ChristopherOrion\\build\\jni\\release",
+    "libraryDir": "C:\\Users\\Christopher\\Documents\\GitHub\\ChristopherOrion_Paradox\\build\\jni\\release",
     "mainClassName": "frc.robot.Main"
   }
 ]

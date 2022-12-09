@@ -49,9 +49,9 @@ public class DriveSubsystem extends SubsystemBase {
   public final double k_a = .45747; 
   public final double k_p = 0;//1.6005E-06;
   private final double k_distancePerTick = .04555;
-  public final double k_maxSpeedMetersPerSecond = .25;
+  public final double k_maxSpeedMetersPerSecond = 1;
   public final double k_maxAccelerationMetersPerSecondSquared = 1;
-  public final double k_volts = 3;
+  public final double k_volts = 10;
 
   public SimpleMotorFeedforward m_feedForward = new SimpleMotorFeedforward(k_s, k_v, k_a);
 
@@ -64,11 +64,12 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftFollower.restoreFactoryDefaults();
     m_rightDrive.restoreFactoryDefaults();
     m_rightFollower.restoreFactoryDefaults();
-    m_right.setInverted(true);
-    m_left.setInverted(false);
+    m_right.setInverted(false);
+    m_left.setInverted(true);
     resetEncoders();
     m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
     SmartDashboard.putData("Get Pose Meters", m_field);
+    SmartDashboard.putData("Drive", m_drive);
   }
   
 
@@ -113,7 +114,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds((m_leftEncoder.getVelocity() * k_distancePerTick) / 60.0, (m_rightEncoder.getVelocity() * k_distancePerTick) / 60.0);
+    return new DifferentialDriveWheelSpeeds((-m_leftEncoder.getVelocity() * k_distancePerTick) / 60.0, (m_rightEncoder.getVelocity() * k_distancePerTick) / 60.0);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts){
@@ -131,12 +132,13 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will bme called once per scheduler run
-    m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getPosition() * k_distancePerTick, m_rightEncoder.getPosition() * k_distancePerTick);
+    m_odometry.update(m_gyro.getRotation2d(), -m_leftEncoder.getPosition() * k_distancePerTick, m_rightEncoder.getPosition() * k_distancePerTick);
     m_field.setRobotPose(m_odometry.getPoseMeters());
-    SmartDashboard.putNumber("Right Encoder", m_rightEncoder.getPosition());
-    SmartDashboard.putNumber("Left Encoder", m_leftEncoder.getPosition());
-    SmartDashboard.putNumber("Right Velocity", m_rightEncoder.getVelocity());
-    SmartDashboard.putNumber("Left Velocity", m_leftEncoder.getVelocity());
+    DifferentialDriveWheelSpeeds speed = getWheelSpeeds();
+    SmartDashboard.putNumber("Right Encoder", m_rightEncoder.getPosition() * k_distancePerTick);
+    SmartDashboard.putNumber("Left Encoder", -m_leftEncoder.getPosition() * k_distancePerTick);
+    SmartDashboard.putNumber("Right Velocity", speed.rightMetersPerSecond);
+    SmartDashboard.putNumber("Left Velocity", speed.leftMetersPerSecond);
   }
 
 }
