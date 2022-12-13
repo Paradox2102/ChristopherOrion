@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
@@ -20,8 +18,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final CANSparkMax m_shooter = new CANSparkMax(Constants.k_shooter, MotorType.kBrushless);
   private final CANSparkMax m_shooterFollower = new CANSparkMax(Constants.k_shooterFollower, MotorType.kBrushless);
   private final CANSparkMax m_backWheels = new CANSparkMax(Constants.k_backWheels, MotorType.kBrushless);
-  SparkMaxPIDController m_shooterController = m_shooter.getPIDController();
-  SparkMaxPIDController m_backWheelController = m_backWheels.getPIDController();
+  private final SparkMaxPIDController m_shooterController = m_shooter.getPIDController();
+  private final SparkMaxPIDController m_backWheelController = m_backWheels.getPIDController();
   private final RelativeEncoder m_shooterEncoder =  m_shooter.getEncoder();
   private final RelativeEncoder m_backWheelEncoder = m_backWheels.getEncoder();
 
