@@ -64,28 +64,38 @@ public class CameraPoseConvertor {
         if(tagPoseOptional.isEmpty()) { // No such tag
             return null;
         }
-        // axis of rotation from rvec
-        Vector<N3> axis = VecBuilder.fill(rx, ry, rz);
-        // angle of rotation from rvec
-        //double theta = axis.norm();
-        double theta = Math.sqrt(axis.get(0,0) * axis.get(0,0) + 
-            axis.get(1,0) * axis.get(1,0) + axis.get(2,0) * axis.get(2,0));
-        System.out.println(String.format("theta=%f", theta));
-        Transform3d cameraToTag1 = new Transform3d(
-            new Translation3d(tx * m_cameraDistanceUnit, ty * m_cameraDistanceUnit, tz * m_cameraDistanceUnit),
-            new Rotation3d(axis, theta)
-        );
-        System.out.println(String.format("cameraToTag1=%s", transformToString(cameraToTag1)));
-
-        // Transform to NORTH-WEST-UP co-ordinate system, FRC convention
-        Transform3d cameraToTag2 = CoordinateSystem.convert(
-            cameraToTag1,
+        Translation3d rawTvec = new Translation3d(tx, ty, -tz);
+        Translation3d cameraToTagTranslation = CoordinateSystem.convert(
+            rawTvec, 
             m_cameraCoordinateSystem,
             CoordinateSystem.NWU()
         );
-        System.out.println(String.format("cameraToTag2=%s", transformToString(cameraToTag2)));
+        Translation3d rawRvecAsTranslation = new Translation3d(rx, ry, rz);
+        Translation3d cameraToTagRotationRodrigues = CoordinateSystem.convert(
+            rawRvecAsTranslation, 
+            m_cameraCoordinateSystem,
+            CoordinateSystem.NWU()
+        );
+
+        // axis of rotation from rvec
+        Vector<N3> axis = VecBuilder.fill(
+            cameraToTagRotationRodrigues.getX(), 
+            cameraToTagRotationRodrigues.getY(), 
+            cameraToTagRotationRodrigues.getZ());
+        // angle of rotation from rvec
+        double theta = cameraToTagRotationRodrigues.getNorm();
+        System.out.println(String.format("theta=%f", theta * 180 / Math.PI));
+        Transform3d cameraToTag = new Transform3d(
+            new Translation3d(
+                cameraToTagTranslation.getX() * m_cameraDistanceUnit, 
+                cameraToTagTranslation.getY() * m_cameraDistanceUnit, 
+                cameraToTagTranslation.getZ() * m_cameraDistanceUnit),
+            new Rotation3d(axis, theta)
+        );
+        System.out.println(String.format("cameraToTag=%s", transformToString(cameraToTag)));
+
         // Find transform from robot to tag
-        Transform3d robotToTag = m_robotToCamera.plus(cameraToTag2);
+        Transform3d robotToTag = m_robotToCamera.plus(cameraToTag);
         // Invert robot-to-tag transform to get tag-to-robot
         // Add tag position on field to tag-to-robot
         // to get robot position on field
