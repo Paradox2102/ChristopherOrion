@@ -8,10 +8,13 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SetCoastModeCommand;
-
+import frc.ApriltagsCamera.ApriltagsCamera;
+import frc.ApriltagsCamera.Logger;
+import frc.ApriltagsCamera.ApriltagsCamera.ApriltagsCameraRegion;
+import frc.ApriltagsCamera.ApriltagsCamera.ApriltagsCameraRegions;
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -25,6 +28,11 @@ public class Robot extends TimedRobot {
 
   private Trigger m_coastModeTrigger;
 
+  private ApriltagsCamera m_camera = new ApriltagsCamera();
+
+  private int m_frameCount = 0;
+  private int m_missingCount = 0;
+  private int m_invalidCount = 0;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -41,7 +49,6 @@ public class Robot extends TimedRobot {
     //.whenActive(() -> m_robotContainer.m_driveSubsystem.setBrakeMode(false));
     .whenActive(new SetCoastModeCommand(m_robotContainer.m_driveSubsystem));
   }
-
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -57,6 +64,42 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     SmartDashboard.putBoolean("coast mode trigger", m_coastModeTrigger.get());
+    
+    ApriltagsCameraRegions regions = m_camera.getRegions();
+
+    if (regions != null)
+    {
+      Logger.log("Robot", -1, String.format("nRegions = %d", regions.m_regions.size()));
+      SmartDashboard.putNumber("nRegions", regions.m_regions.size());
+      SmartDashboard.putNumber("nFrames", ++m_frameCount);
+      SmartDashboard.putNumber("missing", 0);
+      SmartDashboard.putNumber("invalid", 0);
+      SmartDashboard.putNumber("Delay", System.currentTimeMillis() - regions.m_captureTime);
+      SmartDashboard.putNumber("FPS", regions.m_fps);
+
+      if (regions.m_regions.size() == 0)
+      {
+        SmartDashboard.putNumber("missing", ++m_missingCount);
+      }
+
+      int i = 1;
+      for (ApriltagsCameraRegion region : regions.m_regions)
+      {
+        SmartDashboard.putNumber(String.format("Tag%d", i), region.m_tag);
+        SmartDashboard.putNumber(String.format("Dist%d", i), Math.sqrt(region.m_tvec[0] * region.m_tvec[0] +
+                                                                       region.m_tvec[1] * region.m_tvec[1] +
+                                                                       region.m_tvec[2] * region.m_tvec[2]));
+        if (region.m_tag < 0)
+        {
+          SmartDashboard.putNumber("invalid", ++m_invalidCount);
+        }
+        i++;
+      }
+    }
+    else
+    {
+      Logger.log("Robot", -1, "Regions is null");
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

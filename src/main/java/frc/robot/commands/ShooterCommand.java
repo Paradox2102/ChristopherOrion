@@ -4,9 +4,9 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.PiCamera.Logger;
+import frc.ApriltagsCamera.Logger;
 import frc.robot.subsystems.ShooterSubsystem;
 
 public class ShooterCommand extends CommandBase {
@@ -23,7 +23,7 @@ public class ShooterCommand extends CommandBase {
   @Override
   public void initialize() {
     m_subsystem.setSpeed(3000, 3000);
-    Logger.Log("ShooterCommand", 1, "initialized");
+    Logger.log("ShooterCommand", 1, "initialized");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -34,7 +34,7 @@ public class ShooterCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_subsystem.setPower(0, 0);
-    Logger.Log("ShooterCommand", 1, "end");
+    Logger.log("ShooterCommand", 1, "end");
   }
 
   // Returns true when the command should end.

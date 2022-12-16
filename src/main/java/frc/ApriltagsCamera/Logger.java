@@ -1,5 +1,5 @@
 /*
- *	  Copyright (C) 2016  John H. Gaby
+ *	  Copyright (C) 2022  John H. Gaby
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  *    Contact: robotics@gabysoft.com
  */
 
-package frc.PiCamera;
+package frc.ApriltagsCamera;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import frc.PiCamera.Network.NetworkReceiver;
+import frc.ApriltagsCamera.Network.NetworkReceiver;
 
 /**
  * 
@@ -58,7 +58,7 @@ public class Logger
 	private static long			m_startTime	= System.currentTimeMillis();
 	private static Network		m_network	= null;
 	
-	static private PrintWriter CreateLog(String name)
+	static private PrintWriter createLog(String name)
 	{
 		DateFormat 	dateFormat 	= new SimpleDateFormat("MM-dd-HH-mm-ss");
 		Date 		date 		= new Date();
@@ -96,7 +96,7 @@ public class Logger
 			}
 		}
 		
-		public void CloseLog()
+		public void closeLog()
 		{
 			if (m_file != null);
 			{
@@ -105,7 +105,7 @@ public class Logger
 			}
 		}
 		
-		public void CreateLog(String name, boolean logTime, boolean logToConsole)
+		public void createLog(String name, boolean logTime, boolean logToConsole)
 		{
 			m_logToConsole	= logToConsole;
 			m_logTime		= logTime;
@@ -115,7 +115,7 @@ public class Logger
 				m_file.close();
 			}
 			
-			m_file	= Logger.CreateLog(name);
+			m_file	= Logger.createLog(name);
 		}
 		
 /*		public long GetElapsedTime()
@@ -123,7 +123,7 @@ public class Logger
 			return(System.currentTimeMillis() - m_startTime);
 		}*/
 		
-		public void SetLogLevel(int level)
+		public void setLogLevel(int level)
 		{
 			m_level	= level;
 		}
@@ -131,7 +131,7 @@ public class Logger
 	
 	static private ArrayList<LogType>	m_types = new ArrayList<LogType>();
 	
-	static private LogType FindType(String tag)
+	static private LogType findType(String tag)
 	{
 		if (tag	== null)
 		{
@@ -155,37 +155,20 @@ public class Logger
 		return(newType);
 	}
 	
-	static public void LogStackTrace(Exception ex, int level)
-	{
-		synchronized (m_lock)
-		{
-			if (level >= m_level)
-			{
-				if (m_file != null)
-				{
-					ex.printStackTrace(m_file);
-				}
-				else
-				{
-					ex.printStackTrace();
-				}
-			}
-		}
-	}
-	
 	/**
 	 * 
 	 * @param tag - Specifies the tag for this message.
 	 * @param level - Specifies the logging level.  If this value is less than the current minimum level, this message will not be logged.
 	 * @param message - Specifies the message to log.
+	 * @param noLogToConsole - Specifies the this message should NOT be logged to che console.
 	 */
-	static public void Log(String tag, int level, String message)
+	static public void log(String tag, int level, String message, boolean noLogToConsole)
 	{
 		synchronized(m_lock)
 		{
 			if (level >= m_level)
 			{
-				LogType	type	= FindType(tag);
+				LogType	type	= findType(tag);
 				
 				if (level >= type.m_level)
 				{
@@ -208,23 +191,23 @@ public class Logger
 //						System.out.println("Log: logTime = " + logTime);
 						if (logTime)
 						{
-							file.print(GetElapsedTime() + ":");
+							file.print(getElapsedTime() + ":" + type.m_name + "(" + level + "):");
 						}
 						
 						file.println(message + "\r");
 						file.flush();
 					}
 					
-					if ((file == null) || type.m_logToConsole)
+					if ((file == null) || (type.m_logToConsole && !noLogToConsole))
 					{
-						String log = "" + GetElapsedTime() + ":" + type.m_name + "(" + level + "):" + message;
+						String log = "" + getElapsedTime() + ":" + type.m_name + "(" + level + "):" + message;
 						System.out.println(log);
 						
 						if (m_network != null)
 						{
 //							String msg = log + "\r\n" + "xxx";
 //							System.out.print("network: " + msg);
-							m_network.SendMessage(log);
+							m_network.sendMessage(log);
 						}
 						
 //						System.out.print(GetElapsedTime() + ":");	// Always log time to console
@@ -235,11 +218,15 @@ public class Logger
 		}
 	}
 	
+	static public void log(String tag, int level, String message)
+	{
+		log(tag, level, message, false);
+	}
 	/**
 	 * 
 	 * @param level - Specifies the global logging level.  No messages less than this level will be logged, regardless of the logging level for the log type.
 	 */
-	static public void SetLogLevel(int level)
+	static public void setLogLevel(int level)
 	{
 		synchronized(m_lock)
 		{
@@ -252,11 +239,11 @@ public class Logger
 	 * @param tag - Specifies the tag for the log type for which the level is to be set.
 	 * @param level - Specifies the new logging level.  For messages that are tagged with this tag, if the log level of the message is less than this value, the message will not be logged.
 	 */
-	static public void SetLogLevel(String tag, int level)
+	static public void setLogLevel(String tag, int level)
 	{
 		synchronized(m_lock)
 		{
-			FindType(tag).SetLogLevel(level);
+			findType(tag).setLogLevel(level);
 		}
 	}
 	
@@ -264,7 +251,7 @@ public class Logger
 	 * 
 	 * @param name - Specifies a file name.  All logs of messages that do not have their own individual log files will be written to this file
 	 */
-	static public void SetLogFile(String name)
+	static public void setLogFile(String name)
 	{
 		synchronized(m_lock)
 		{
@@ -273,7 +260,7 @@ public class Logger
 				m_file.close();
 			}
 			
-			m_file	= CreateLog(name);
+			m_file	= createLog(name);
 		}
 	}
 	
@@ -285,9 +272,9 @@ public class Logger
 	 * Calls <strong>SetLogFile(tag, name, false)</strong>
 	 * 
 	 */
-	static public void SetLogFile(String tag, String name)
+	static public void setLogFile(String tag, String name)
 	{
-		SetLogFile(tag, name, false, false);
+		setLogFile(tag, name, false, false);
 	}
 	
 	/**
@@ -299,9 +286,9 @@ public class Logger
 	 * Calls <strong>SetLogFile(tag, name, logTime, false)</strong>
 	 * 
 	 */
-	static public void SetLogFile(String tag, String name, boolean logTime)
+	static public void setLogFile(String tag, String name, boolean logTime)
 	{
-		SetLogFile(tag, name, logTime, false);
+		setLogFile(tag, name, logTime, false);
 	}
 	
 	/**
@@ -311,18 +298,18 @@ public class Logger
 	 * @param logTime - If <strong>true</strong>, include the current time stamp for each logged line.
 	 * @param logToConsole - If <strong>true</strong>, log messages to the console as well as the file
 	 */
-	static public void SetLogFile(String tag, String name, boolean logTime, boolean logToConsole)
+	static public void setLogFile(String tag, String name, boolean logTime, boolean logToConsole)
 	{
 		synchronized(m_lock)
 		{
-			FindType(tag).CreateLog(name, logTime, logToConsole);
+			findType(tag).createLog(name, logTime, logToConsole);
 		}
 	}
 	
 	/**
 	 * Close the master log file
 	 */
-	static public void CloseLogFile()
+	static public void closeLogFile()
 	{
 		synchronized(m_lock)
 		{
@@ -338,11 +325,11 @@ public class Logger
 	 * @param tag - Close the log file associated with messages with this tag.
 	 * 
 	 */
-	static public void CloseLogFile(String tag)
+	static public void closeLogFile(String tag)
 	{
 		synchronized(m_lock)
 		{
-			FindType(tag).CloseLog();
+			findType(tag).closeLog();
 		}
 	}
 	
@@ -350,15 +337,15 @@ public class Logger
 	 * Close all log files.
 	 * 
 	 */
-	static public void CloseAllLogFiles()
+	static public void closeAllLogFiles()
 	{
-		CloseLogFile();
+		closeLogFile();
 		
 		synchronized(m_lock)
 		{
 			for (LogType type : m_types)
 			{
-				type.CloseLog();
+				type.closeLog();
 			}
 		}
 	}
@@ -367,7 +354,7 @@ public class Logger
 	 * 
 	 * @return Returns the time elapsed since the last call to <strong>ResetElapsedTime()</strong>
 	 */
-	static public long GetElapsedTime()
+	static public long getElapsedTime()
 	{
 		synchronized(m_lock)
 		{
@@ -379,7 +366,7 @@ public class Logger
 	 * 
 	 * Resets the elapsed time to zero
 	 */
-	static public void ResetElapsedTime()
+	static public void resetElapsedTime()
 	{
 		synchronized(m_lock)
 		{
@@ -390,18 +377,16 @@ public class Logger
 	static private class Receiver implements NetworkReceiver
 	{
 		@Override
-		public void ProcessData(String command) 
+		public void processData(String command) 
 		{
 		}
 
 		@Override
-		public void Disconnected() {
-			
+		public void connected() {
 		}
 
 		@Override
-		public void Connected() {
-			
+		public void disconnected() {
 		}
 	}
 	
@@ -410,13 +395,13 @@ public class Logger
 	 * Starts a network server that can be contacted to receive the log strings.
 	 * The server listens on port 5810.
 	 */
-	static public void StartLoggingServer()
+	static public void startLoggingServer()
 	{
 		if (m_network == null)
 		{
 			m_network	= new Network();
 			
-			m_network.Listen(new Receiver(), 5810);
+			m_network.listen(new Receiver(), 5810);
 		}
 	}
 }

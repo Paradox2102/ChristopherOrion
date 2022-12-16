@@ -15,14 +15,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.PiCamera.Logger;
+import frc.ApriltagsCamera.Logger;
 import frc.robot.Constants;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -110,7 +109,7 @@ public class DriveSubsystem extends SubsystemBase {
     m_rightDrive.setIdleMode(brake ? IdleMode.kBrake : IdleMode.kCoast);
     m_rightFollower.setIdleMode(brake ? IdleMode.kBrake : IdleMode.kCoast);
     SmartDashboard.putBoolean("brake mode", brake);
-    Logger.Log("DriveSubsystem", 1, "Brake  " + brake);
+    Logger.log("DriveSubsystem", 1, "Brake  " + brake);
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {

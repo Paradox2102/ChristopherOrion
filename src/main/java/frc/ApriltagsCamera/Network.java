@@ -1,5 +1,5 @@
 /*
- *	  Copyright (C) 2016  John H. Gaby
+ *	  Copyright (C) 2022  John H. Gaby
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  *    Contact: robotics@gabysoft.com
  */
 
-package frc.PiCamera;
+package frc.ApriltagsCamera;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,9 +72,9 @@ public class Network
 		 * @param command - Specifies the data received
 		 * 
 		 */
-		public void ProcessData(String command);
-		public void Connected();
-		public void Disconnected();
+		public void processData(String command);
+		public void connected();
+		public void disconnected();
 	}
 	
 
@@ -90,7 +90,7 @@ public class Network
 	 * @param retryTime - Specifies the amount of time in milliseconds to retry failed connections
 	 * 
 	 */
-	public void Connect(NetworkReceiver receiver, String host, int port, int retryTime)
+	public void connect(NetworkReceiver receiver, String host, int port, int retryTime)
 	{
 		m_host				= host;
 		m_port				= port;
@@ -114,9 +114,9 @@ public class Network
 	 * @param port - Specifies the host port number
 	 * 
 	 */
-	public void Connect(NetworkReceiver receiver, String host, int port)
+	public void connect(NetworkReceiver receiver, String host, int port)
 	{
-		Connect(receiver, host, port, 5000);
+		connect(receiver, host, port, 5000);
 	}
 	
 	/**
@@ -125,13 +125,13 @@ public class Network
 	 * @param message - Specifies message to be sent
 	 * 
 	 */
-	public void SendMessage(String message)
+	public void sendMessage(String message)
 	{
 		synchronized(m_networkReceiver)
 		{
 			if (m_printStream != null)
 			{
-				Logger.Log("Network", -1, "SendMessage: " + message);
+				Logger.log("Network", -1, "SendMessage: " + message);
 				m_printStream.println(message);
 			}
 		}
@@ -147,7 +147,7 @@ public class Network
 	 * @param port - Specifies the port to listen on
 	 * 
 	 */
-	public void Listen(NetworkReceiver receiver, int port)
+	public void listen(NetworkReceiver receiver, int port)
 	{
 		m_host				= null;
 		m_port				= port;
@@ -157,7 +157,11 @@ public class Network
 		new Thread(m_receiver).start();
 	}
 	
-	public void CloseConnection()
+	/**
+	 * This function closes the connection.
+	 *
+	 */
+	public void closeConnection()
 	{
 		System.out.println("CloseConnection");
 		
@@ -206,18 +210,18 @@ public class Network
 			}
 		}
 		
-		m_networkReceiver.Disconnected();
+		m_networkReceiver.disconnected();
 	}
 	
 	private class Receiver implements Runnable
 	{
-		private void RunClient()
+		private void runClient()
 		{
-			Logger.Log("Network", 1, String.format("%s:%d: Client Thread started", m_host, m_port));
+			Logger.log("Network", 1, String.format("%s:%d: Client Thread started", m_host, m_port));
 			
 			while (true)
 			{
-				Logger.Log("Network", 1, String.format("Connecting to %s:%d", m_host, m_port));
+				Logger.log("Network", 1, String.format("Connecting to %s:%d", m_host, m_port));
 				
 				try 
 				{
@@ -236,9 +240,9 @@ public class Network
 
 					String command = "";
 					
-					Logger.Log("Network", 1, String.format("Connected to %s:%d", m_host, m_port));
+					Logger.log("Network", 1, String.format("Connected to %s:%d", m_host, m_port));
 					
-					m_networkReceiver.Connected();
+					m_networkReceiver.connected();
 					
 					while (true)
 					{
@@ -246,7 +250,7 @@ public class Network
 						
 						if (ch < 0)
 						{
-							Logger.Log("Network", 2, "Connection lost");
+							Logger.log("Network", 2, "Connection lost");
 						
 							break;
 						}
@@ -255,7 +259,7 @@ public class Network
 						{
 							if (command.length() >= 1)
 							{
-								m_networkReceiver.ProcessData(command);
+								m_networkReceiver.processData(command);
 							}
 							
 							command	= "";
@@ -274,10 +278,10 @@ public class Network
 				}
 				catch (Exception ex)
 				{
-					Logger.Log("Network",  3, "Receiver exception: " + ex);
+					Logger.log("Network",  3, "Receiver exception: " + ex);
 				}
 				
-				CloseConnection();
+				closeConnection();
 				
 				if (m_retryTime == 0)
 				{
@@ -291,16 +295,16 @@ public class Network
 				}
 			}
 			
-			Logger.Log("Network", 1, String.format("%s:%d: Thread exit", m_host, m_port));
+			Logger.log("Network", 1, String.format("%s:%d: Thread exit", m_host, m_port));
 		}
 		
-		private void RunHost()
+		private void runHost()
 		{
-			Logger.Log("Network", 1, String.format("Host Thread started on port %d", m_port));
+			Logger.log("Network", 1, String.format("Host Thread started on port %d", m_port));
 			
 			while (true)
 			{
-				Logger.Log("Network", 1, String.format("Waiting for connection on port %d", m_port));
+				Logger.log("Network", 1, String.format("Waiting for connection on port %d", m_port));
 				
 				try
 				{
@@ -316,12 +320,12 @@ public class Network
 					int ch;
 					String	command	= "";
 					
-					Logger.Log("Network", 2, "Host connected");
+					Logger.log("Network", 2, "Host connected");
 					
 					synchronized(m_networkReceiver)
 					{
 
-						Logger.Log("Network", 2, "m_printStream = " + m_printStream);
+						Logger.log("Network", 2, "m_printStream = " + m_printStream);
 					}
 					
 					do
@@ -330,7 +334,7 @@ public class Network
 						
 						if (ch == '\n')
 						{
-							m_networkReceiver.ProcessData(command);
+							m_networkReceiver.processData(command);
 							command	= "";
 							
 						}
@@ -342,9 +346,9 @@ public class Network
 				}
 				catch (Exception ex)
 				{
-					Logger.Log("Network", 3, "Host network error: " + ex);
+					Logger.log("Network", 3, "Host network error: " + ex);
 					
-					CloseConnection();
+					closeConnection();
 				}
 			}
 		}
@@ -354,11 +358,11 @@ public class Network
 		{
 			if (m_host == null)
 			{
-				RunHost();
+				runHost();
 			}
 			else
 			{
-				RunClient();
+				runClient();
 			}
 		}
 	}

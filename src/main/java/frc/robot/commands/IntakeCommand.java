@@ -5,7 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.PiCamera.Logger;
+import frc.ApriltagsCamera.Logger;
 import frc.robot.subsystems.IntakeSubsystem;
 
 public class IntakeCommand extends CommandBase {
@@ -22,7 +22,7 @@ public class IntakeCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Logger.Log("IntakeCommand", 1, "initialize");
+    Logger.log("IntakeCommand", 1, "initialize");
     m_subsystem.setPower(k_power);
   }
 
@@ -34,7 +34,7 @@ public class IntakeCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_subsystem.setPower(0);
-    Logger.Log("IntakeCommand", 1, "end");
+    Logger.log("IntakeCommand", 1, "end");
   }
 
   // Returns true when the command should end.
