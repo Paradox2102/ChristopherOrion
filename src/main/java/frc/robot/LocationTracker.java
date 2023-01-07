@@ -6,6 +6,9 @@ public class LocationTracker {
         double[] location = new double[2];
         double tx = target[0];
         double ty = target[1];
+        for (double i = theta; i >= 360; i = theta){
+            theta -= 360;
+        }
 
         double alpha = Math.atan(x/z);
         double beta = theta - 90 - alpha;
