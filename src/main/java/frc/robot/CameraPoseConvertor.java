@@ -1,8 +1,10 @@
 package frc.robot;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -60,12 +62,20 @@ public class CameraPoseConvertor {
         return String.format("t=%s, r=(%f, %f, %f), d=%f", t.getTranslation().toString(), r.getX() * 180/Math.PI, r.getY() * 180/Math.PI, r.getZ() * 180/Math.PI, t.getTranslation().getNorm());
     }
 
+    // We don't convert the usual way because the camera solved the tag location using points in the
+    // camera co-ordinate system.  This means that we need to interpret the rotation specially,
+    static Transform3d convertCoordinateSystem(Transform3d transform, CoordinateSystem from, CoordinateSystem to) {
+        Translation3d translation = CoordinateSystem.convert(transform.getTranslation(), from, to);
+        Rotation3d rotation = transform.getRotation();
+        return new Transform3d(translation, rotation);
+    }
+
     // Rodrigues paranmeters represent a rotation as a 3-vector where the
     // direction is the axis of rotation and the magnitude is tan(theta/2).
     static Rotation3d rodriguesToRotation3d(double x, double y, double z) {
         Vector<N3> axis = VecBuilder.fill(x, y, z);
         // angle of rotation from rvec
-        double theta = 2 * Math.atan(Math.sqrt(x*x + y*y + z*z));
+        double theta = Math.sqrt(x*x + y*y + z*z);
         return new Rotation3d(axis, theta);
     }
 
@@ -87,7 +97,7 @@ public class CameraPoseConvertor {
         );
         System.out.println(String.format("cameraToTag=%s", transformToString(cameraToTag)));
 
-        Transform3d cameraToTag2 = CoordinateSystem.convert(
+        Transform3d cameraToTag2 = convertCoordinateSystem(
             cameraToTag, 
             m_cameraCoordinateSystem,
             CoordinateSystem.NWU()
@@ -98,7 +108,7 @@ public class CameraPoseConvertor {
         System.out.println(String.format("cameraToTag3=%s", transformToString(cameraToTag3)));
 
         // Find transform from robot to tag
-        Transform3d robotToTag = m_robotToCamera.plus(cameraToTag3);
+        Transform3d robotToTag = m_robotToCamera.inverse().plus(cameraToTag3);
         // Invert robot-to-tag transform to get tag-to-robot
         // Add tag position on field to tag-to-robot
         // to get robot position on field
@@ -109,57 +119,71 @@ public class CameraPoseConvertor {
     }
 
     private static final double[][] testData = {
-       // rx,ry,rz,tx,ty,tz
-        { -0.06,-0.05,-0.01,-1.2,-2.4,47 },
-        { -0.07,-0.06,-0.01,-2.9,-2.3,54.8 },
-        { -0.06,-0.11,-0.01,-4.8,-2.2,63.4 },
-        { -0.07,-0.11,-0.02,-3.1,-2,76 },
-        { -0.07,-0.03,-0.02,-4.7,-1.1,87.2 },
-        { -0.04,0,-0.02,0.3,-0.6,95.6 },
-        { 0,-0.06,-0.02,-0.8,-0.7,99.7 },
-        { 0.08,-0.06,-0.01,0.4,-0.8,108.2 },
-        { 0.04,-0.02,-0.02,1.4,0.3,117.7 },
-        { -0.1,-0.08,-0.02,-0.5,0.6,136.8 },
-        { -0.1,-0.77,-0.04,-14.7,-2.3,69.7 }
+        // dx, dy, dz in camera frame (EDN)
+        // rvec, tvec in camera frame (EDN) 
+        // All distances in inches
+        { 8.75,0,102.5,-0.09,0.1,0.02,8.6,0.8,102.6 },
+        { 11,0,102.5,-0.03,0.03,-0.02,10.5,0.8,102.4 },
+        { 14.5,0,102.5,0,0.01,-0.03,13.8,0.8,102.2 },
+        { 17.25,0,102.5,-0.04,0.01,-0.03,17.6,0.9,102.5 },
+        { 22.74,0,102.5,0.01,0.39,0.01,21.8,1,101.5 },
+        { 26.5,0,102.5,0.02,0.47,0.02,25.7,1.1,102.2 },
+        { 30.25,0,102.5,-0.06,0,0,29.3,1.4,101.3 },
+        { 34.5,0,102.5,-0.08,0,0,33.4,1.4,101.7 },
+        { 0,-11,102.5,-0.04,0.03,0.03,0.3,-10.2,103.4 },
+        { 0,-13.75,102.5,-0.07,0.05,0.01,0.2,-13,103.8 },
+        { 0,-18,102.5,-0.05,0.01,0.05,0.6,-17.1,104.4 },
+        { 0,-22,102.5,-0.05,0.02,0.05,0.7,-21.1,104.2 },    
+        { 0,-25.5,102.5,-0.07,0.01,0.08,0.9,-24.6,105.1 },
+        { 0,0,102.5,0.02,0.06,0.02,0.2,0.6,102.4 },
+        { 0,0,102.5,-0.06,0,0.02,0.2,0.6,102.9 },
+        { 0,0,102.5,-0.09,0.06,0.03,0.1,0.6,102.2 },
+        { 0,0,102.5,-0.08,0.03,0.03,0.1,0.6,102.2 },  
+        { 0,0,102.5,-0.07,0.04,0.02,0.2,0.6,103 },
+        { 0,0,102.5,-0.09,0.02,0.03,0.1,0.6,102.7 },
+        { 0,0,102.5,-0.11,0.01,0.02,0.1,0.6,103.2 },
+        { 0,0,102.5,-0.08,0.03,0.03,0.1,0.6,103 },
+        { 0,0,102.5,-0.11,0.05,0.02,0.1,0.6,10 },
+        { 0,0,102.5,-0.07,-0.03,0.03,0.1,0.6,102.5 },
+        { 0,0,102.5,-0.08,-0.05,0.03,0.1,0.6,102.3 },
+        { 0,0,102.5,-0.08,-0.02,0.03,0.1,0.6,102.5 },
+        { 0,0,102.5,-0.09,0.01,0.03,0.1,0.6,102.8 }
     };
 
     public static void main(String[] args) throws IOException {
         System.out.println("*************************************");
         Transform3d robotToCamera = new Transform3d(
-            new Translation3d(0, 0, 0),
+            new Translation3d(0.2, 0, 0.5),
             new Rotation3d(0, 0, 0)
         );
 
-        //String apriltagsPath = CameraPoseConvertor.class.getClassLoader().getResource("edu/wpi/first/apriltag/2022-rapidreact.json").getPath();
-        String apriltagsPath = args[0];
-        System.out.println(apriltagsPath);
-        AprilTagFieldLayout tags = new AprilTagFieldLayout(apriltagsPath);
-        System.out.println(String.format("tag0pose=%s", tags.getTagPose(0).get().toString()));
+        Pose3d tagPose = new Pose3d(new Translation3d(1,2,3), new Rotation3d());
+        AprilTagFieldLayout tags = new AprilTagFieldLayout(Arrays.asList(new AprilTag[]{
+            new AprilTag(0, tagPose)}), 16.54175, 8.0137);
+
         CameraPoseConvertor cameraPoseConvertor = new CameraPoseConvertor(tags)
             .setRobotToCamera(robotToCamera) // camera is not at centre of robot
             .setCameraCoordinateSystem(CoordinateSystem.EDN()) // Camera uses EAST-DOWN-UP
             .setCameraDistanceUnit(0.0254) // Camera uses inches
             .setCameraTagPose(new Pose3d( // Tag points backwards
                 new Translation3d(), 
-                new Rotation3d(-Math.PI/2, Math.PI, 0)
+                new Rotation3d(0, 0, Math.PI)
             ));
-        // Take tvec and rvec from camera and convert to robot position on field
-        //Pose3d robotPosition3d = cameraPoseConvertor.convert(0, -1.2, -2.4, 47, -0.06, -0.05, -0.01);
-        Pose3d robotPosition3d = cameraPoseConvertor.convert(0, -14.7,-2.3,69.7, -0.10,-0.77,-0.04);
-        System.out.println(String.format("robotPosition3d=%s", poseToString(robotPosition3d)));
-        if(robotPosition3d != null) {
-            // Convert 3d pose to 2d pose
-            Pose2d robotPosition2d = new Pose2d(
-                robotPosition3d.getX(),
-                robotPosition3d.getY(),
-                new Rotation2d(robotPosition3d.getRotation().getZ())
+
+        for(double[] data : testData) {
+            System.out.println("***");
+            System.out.println(String.format("data=(dx=%f, dy=%f, dz=%f, rx=%f, ry=%f, rz=%f, tx=%f, ty=%f, tz=%f}", 
+                data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]));
+            Pose3d robotPosition3d = cameraPoseConvertor.convert(0, 
+                data[6], data[7], data[8], // tvec 
+                data[3], data[4], data[5] // rvec
+                );
+            Pose3d expectedPosition = new Pose3d(
+                new Translation3d(1 + data[2] * 0.0254 - 0.2, 2 + data[0] * 0.0254, 3 - data[1] * 0.0254 - 0.5),
+                new Rotation3d(0, 0, Math.PI)
             );
-            System.out.println(String.format("robotPosition2d=%s", robotPosition2d.toString()));
-            // Update estimator with position from camera
-            // m_estimator.addVisionMeasurment(
-            //     robotPosition2d,
-            //     timestampSeconds // when picture was taken
-            // );
+            System.out.println(String.format("robotPosition3d=%s, expectedPosition=%s", poseToString(robotPosition3d), poseToString(expectedPosition)));
+
         }
     }
 }
